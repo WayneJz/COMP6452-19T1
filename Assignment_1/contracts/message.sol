@@ -1,37 +1,56 @@
 pragma solidity ^0.4.24;
+pragma experimental ABIEncoderV2;
+
+// 1. quorum is the number of all voters
+// 2. contract creator can add choices in the middle of polling, unless quorum met
+// 3. voters can not only see the choices, but also see the current polling results
+// 4. first contract operator (in address) becomes the creator
+// 5. get result shall return all tied winners
 
 contract LunchVote {
 
     struct Voter {
         bool isVoted;
-        bytes32 voteName;
+        uint voteId;
     }
 
     struct Lunch {
-        bytes32 name;
+        uint id;
+        string name;
         uint voteCount;
     }
 
-    uint quorum;
-    bool voteAcceptable;
-    bytes32 resultName;
+    uint public quorum;
+    uint public voteAcceptedCount;
+    uint private maxVote;
+
+    bool public voteAcceptable;
 
     address public contractCreator;
-    mapping(address => Voter) public voters;
     Lunch[] public lunchVotes;
+    mapping(address => Voter) public voters;
+    
+    constructor(uint quorumSet) public{
+        voteAcceptable = true;
+        quorum = quorumSet;
+        voteAcceptedCount = 0;
+        maxVote = 0;
+        contractCreator = msg.sender;
+    }
 
-    constructor(bytes32[] lunchChoicesAdd, uint quorumSet) public{
+    function choiceCreator(string[] lunchChoicesAdd) public{
         require(
             contractCreator == msg.sender,
             "Lunch choices must be added by the creator!"
         );
-        voteAcceptable = true;
-        quorum = quorumSet;
+        uint lastId = lunchVotes.length;
         for (uint index = 0; index < lunchChoicesAdd.length; index ++){
             lunchVotes.push(Lunch({
+                id: lastId,
                 name: lunchChoicesAdd[index],
                 voteCount : 0
             }));
+            lastId += 1;
         }
     }
 
@@ -42,20 +61,16 @@ contract LunchVote {
         );
         require(
             voters[newVoterAddress].isVoted == false,
-            "Authorize a voter who has voted is not permitted!"
+            "Authorizing a voter who has voted is not permitted!"
         );
         voters[newVoterAddress].isVoted = false;
     }
 
-    function getResult() public view returns (bytes32) {
-        require(
-            voteAcceptable == false,
-            "Result cannot be displayed! Voting still in progress."
-        );
-        return resultName;
+    function getResult() public returns (Lunch[]) {
+        return lunchVotes;
     }
 
-    function vote(bytes32 lunchName) public returns (string) {
+    function vote(uint lunchId) public returns (string) {
         Voter storage validVoter = voters[msg.sender];
         require(
             validVoter.isVoted == false,
@@ -63,28 +78,29 @@ contract LunchVote {
         );
         require(
             voteAcceptable == true,
-            "Vote not yet accepted because a lunch vote count reaches the quorum."
+            "Vote not yet accepted because this vote reaches the quorum."
+        );
+        require(
+            lunchId < lunchVotes.length,
+            "Invalid vote! Your vote does not match any given choice ID."
         );
         validVoter.isVoted = true;
-        validVoter.voteName = lunchName;
-        for (uint index = 0; index < lunchVotes.length; index ++){
-            if (lunchVotes[index].name == lunchName){
-                lunchVotes[index].voteCount += 1;
-                if (lunchVotes[index].voteCount >= quorum){
-                    voteAcceptable = false;
-                    resultName = lunchVotes[index].name;
-                    return "Vote not yet accepted because the lunch you vote reaches the quorum.";
-                }
-                return "Vote accepted.";
-            }
+        validVoter.voteId = lunchId;
+        voteAcceptedCount += 1;
+        lunchVotes[lunchId].voteCount += 1;
+        if (lunchVotes[lunchId].voteCount > maxVote){
+            maxVote = lunchVotes[lunchId].voteCount;
         }
-        return "Invalid vote! Your vote does not match any given choices.";
+        if (voteAcceptedCount >= quorum){
+            voteAcceptable = false;
+        }
+        return "Vote accepted.";
     }
 
     function deconstructor() public{
         require(
             contractCreator == msg.sender,
-            "Only the creator can deconstructor the vote"
+            "Only the creator can deconstructor the vote."
         );
         selfdestruct(contractCreator);
     }
