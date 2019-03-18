@@ -6,6 +6,8 @@ pragma experimental ABIEncoderV2;
     Student: Zhou JIANG
     Student Number: z5146092
     COMP6452, 19T1, Assignment 1
+    NOTE: Have tested on version Solidity 0.4.24 enviornment
+    NOTE: Must use experimental features
 */
 
 
