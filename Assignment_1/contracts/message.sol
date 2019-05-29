@@ -54,7 +54,7 @@ contract LunchVote {
         Constructor: (Requirement 5)
         1. Allow this contract to accept votes.
         2. Set the quorum.
-        3. Initialize other global variables. 
+        3. Initialize other global variables.
         4. Store the caller's address to the contract creator.
         5. Store the caller's address to the authorized address array.
     */
@@ -151,7 +151,7 @@ contract LunchVote {
             Otherwise it is unfair, and it will make no differences with getChoices function.
         3. Store winners names and vote counts from struct array to the new arrays.
         4. The message prompts whether tie winners or not.
-        5. Return the message and new arrays. 
+        5. Return the message and new arrays.
     */
 
     function getResult() public view returns (string memory, string[] memory winners, uint[] memory votes) {
@@ -188,9 +188,9 @@ contract LunchVote {
         2. Check if the voter has already voted, if yes, reject it.
         3. Check if the voting is still in progress, if not, reject it.
         4. Use a iteration to check if the input string matches any proposal names.
-        5. If matches, stores the voteID, increment the vote counts, 
+        5. If matches, stores the voteID, increment the vote counts,
             check if this proposal becomes the most popular one, if yes, maxVote becomes the vote counts,
-            check if the quorum reaches, if yes, set the vote is no more acceptable. 
+            check if the quorum reaches, if yes, set the vote is no more acceptable.
         6. If not matches, this vote attempt will not be recorded,
             message will prompt, and the voter can try again.
     */
