@@ -4,7 +4,7 @@ COMP6452 Software Architecture for Blockchain Applications 2019T1
 
 Lecture in charge: Ingo Weber
 
-## Credits
+## Copyright and Credits
 
 All course slides, materials and a book come from the lecturers. No sharing or commercial use before getting agreement from them. I will take no responsibility for such misuse.
 
